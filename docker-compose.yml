@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      VIDEO_PATH: ${VIDEO_PATH:-/media}
+    volumes:
+      - ${VIDEO_PATH:-/mnt/user/media}:/media:ro
+    ports:
+      - "8000:8000"
+    # Remove the deploy block entirely if you don't have an NVIDIA GPU / nvidia-container-toolkit.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, video]
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3333}:80"
+    depends_on:
+      - backend
